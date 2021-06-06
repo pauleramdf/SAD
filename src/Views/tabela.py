@@ -40,6 +40,7 @@ class Tabela(Frame):
 
         self.sbar.pack(side=RIGHT, fill=Y) 
         self.tabela.pack(side=LEFT, expand=YES, fill=BOTH)
+        self.tabela.bind("<Double-1>", self.onDoubleClick)
 
     def settext(self, texto):
         #self.text.delete('1.0', END) 
@@ -54,3 +55,9 @@ class Tabela(Frame):
             return valores
         except:
             messagebox.showinfo(title="ERRO", message="Selecione uma linha valida")
+    
+    def onDoubleClick(self, event):
+            linhaSelecionada = self.tabela.selection()[0]
+            valores = self.tabela.item(linhaSelecionada, "values")
+            self.controller.setListaTurmas(valores)
+            self.controller.setHorarioTurma(valores)

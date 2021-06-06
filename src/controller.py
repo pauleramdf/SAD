@@ -3,13 +3,6 @@ from tkinter import messagebox
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import *
-import csv
-import math
-import random
-#import sqlalchemy
-from decimal import Decimal
-import copy
-#import pandas as pd
 from Views.topMenu import TopMenu
 from Views.sideMenu import SideMenu
 from Views.tabela import Tabela
@@ -21,7 +14,7 @@ class Controller:
         self.topMenu = TopMenu(self, parent)
         self.tabela = Tabela(self, parent)
         self.sideMenu = SideMenu(self, parent)
-        self.modelo = Model(self, parent)
+        self.model = Model(self, parent)
 
     def getLinha(self):
         info = self.tabela.getLinha()
@@ -30,13 +23,27 @@ class Controller:
         #self.model.
     def otimizacao_btn_pressed( self, peso, temp, fator, maxIterations, pathTurmas, pathSalas):
         #try:
-        (qBefore, qAfter) = self.modelo.solucao(peso, temp, fator, maxIterations, pathTurmas, pathSalas)
+        (qBefore, qAfter) = self.model.solucao(peso, temp, fator, maxIterations, pathTurmas, pathSalas)
         self.sideMenu.setQualidadeBefore(qBefore)
         self.sideMenu.setQualidadeAfter(qAfter)
         self.sideMenu.setDiferenca(qBefore, qAfter)
-        self.resultado.settext(self.modelo.exibeSolucao(self.modelo.otimizacao))
+        self.tabela.settext(self.model.exibeSolucao(self.model.otimizacao))
         #except:
         #   messagebox.showinfo(title="ERRO", message="Parametros invalidos")
+    
+    def setListaTurmas(self, valores):
+        self.sideMenu.setListaTurmas(valores)
+
+    def setHorarioTurma(self, valores):
+        self.sideMenu.setHorarioTurma(valores)
+
+    def getSalasPossiveis(self, id_turma):
+        salasPossiveis = self.model.listaSalasPossiveis(id_turma)
+        return salasPossiveis
+    def getHorarioTurma(self, id_turma):
+        horariosPossiveis = self.model.getHorarioTurma(id_turma)
+        return horariosPossiveis
+
 
         
 if __name__ == "__main__":

@@ -35,22 +35,13 @@ class SideMenu(Frame):
         self.labelqAfter = tk.Label(self.container, textvariable = self.qualidadeAfter)
         self.labelDiferenca = tk.Label(self.container, textvariable = self.diferenca)
         self.label3 = tk.Label(self.container,text= "Lista de turmas")
-        self.listaTurmas  = ttk.Combobox(self.container, values = [
-            "turma 1",
-            "turma 2",
-            "turma 3",
-            "turma 4"
-            ])
-        self.listaTurmas2  = ttk.Combobox(self.container, values = [
-            "turma 1",
-            "turma 2",
-            "turma 3",
-            "turma 4"
-            ])
+        self.listaTurmas  = ttk.Combobox(self.container, justify=CENTER, values = ["Horarios da turma"])
+        self.listaTurmas2  = ttk.Combobox(self.container,justify=CENTER, values=["Salas Disponiveis"])
         self.trocar = Button(self.container, text="Trocar",command=self.trocarTurmas)
 
     def setup_layout(self):
-        self.listaTurmas.current(1)
+        self.listaTurmas.current(0)
+        self.listaTurmas2.current(0)
         self.labelqBefore.pack()
         self.labelqAfter.pack()
         self.labelDiferenca.pack()
@@ -71,4 +62,25 @@ class SideMenu(Frame):
 
     def setDiferenca(self, a, b):
         self.diferenca.set("Melhora obtida foi de = {q: .3f}%".format(q = (b - a)/b *100))
+    
+    def setHorarioTurma(self, valores):
+        id_turma = valores[4]
+        lista = []
+
+        horariosPossiveis = self.controller.getHorarioTurma(id_turma)
+        for h in horariosPossiveis:
+            lista.append(str(h[0]) + " " + str(h[1]))
+
+        self.listaTurmas['values'] = lista
+
+    def setListaTurmas(self, valores):
+        id_turma = valores[4]
+        lista = []
+
+        salasPossiveis = self.controller.getSalasPossiveis(id_turma)
+        for sala in salasPossiveis:
+            lista.append(str(sala[0]))
+        self.listaTurmas2['values'] = lista
+
+        #[('101', {'cad': 100, 'acess': 1, 'quali': 1}), ('201', {'cad': 100, 'acess': 1, 'quali': 2}), ('301', {'cad': 100, 'acess': 1, 'quali': 2})]
 
