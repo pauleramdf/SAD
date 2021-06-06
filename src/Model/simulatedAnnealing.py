@@ -116,7 +116,14 @@ class Model:
             list.append((dia,int(horarioIni)))
         return list
 
-
+    def getHorarioTurma(self, id_turma):
+        id_turma = int(id_turma)
+        return self.turmas[id_turma]['horario']
+        
+    def listaSalasPossiveis(self, id_turma):
+        id_turma = int(id_turma)
+        salasPossiveis = self.achaSalasPossiveis(self.turmas[id_turma], self.sorted_salas)
+        return salasPossiveis
 
     def achaSalasPossiveis(self, turma, salas):
         #busca as salas que ainda estão livr
