@@ -18,18 +18,22 @@ class Controller:
 
     def getLinha(self):
         info = self.tabela.getLinha()
+        return info
 
-        #('101', 'sex', '8', 'COMP0347')
-        #self.model.
+    def trocaTurmas(self, salas, dia, horario):
+        self.model.trocarTurma(salas, dia, horario)
+        self.tabela.updateTabela(self.model.exibeSolucao((self.model.otimizacao)))
+
     def otimizacao_btn_pressed( self, peso, temp, fator, maxIterations, pathTurmas, pathSalas):
-        #try:
-        (qBefore, qAfter) = self.model.solucao(peso, temp, fator, maxIterations, pathTurmas, pathSalas)
-        self.sideMenu.setQualidadeBefore(qBefore)
-        self.sideMenu.setQualidadeAfter(qAfter)
-        self.sideMenu.setDiferenca(qBefore, qAfter)
-        self.tabela.settext(self.model.exibeSolucao(self.model.otimizacao))
-        #except:
-        #   messagebox.showinfo(title="ERRO", message="Parametros invalidos")
+        try:
+            (qBefore, qAfter) = self.model.solucao(peso, temp, fator, maxIterations, pathTurmas, pathSalas)
+            self.sideMenu.setQualidadeBefore(qBefore)
+            self.sideMenu.setQualidadeAfter(qAfter)
+            self.sideMenu.setDiferenca(qBefore, qAfter)
+            self.sideMenu.setTaxaOCup(self.model.taxaOcup)
+            self.tabela.setTabela(self.model.exibeSolucao(self.model.otimizacao))
+        except:
+            messagebox.showinfo(title="ERRO", message="Parametros invalidos")
     
     def setListaTurmas(self, valores):
         self.sideMenu.setListaTurmas(valores)
@@ -40,9 +44,14 @@ class Controller:
     def getSalasPossiveis(self, id_turma):
         salasPossiveis = self.model.listaSalasPossiveis(id_turma)
         return salasPossiveis
+
     def getHorarioTurma(self, id_turma):
         horariosPossiveis = self.model.getHorarioTurma(id_turma)
         return horariosPossiveis
+    
+    def salvarSolucao(self):
+        self.model.salvarSolucao()
+
 
 
         

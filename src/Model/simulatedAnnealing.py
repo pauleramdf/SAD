@@ -1,15 +1,12 @@
-import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
-from tkinter import filedialog
-from tkinter import *
 import csv
 import math
 import random
 #import sqlalchemy
 from decimal import Decimal
-import copy
+import copy 
 #import pandas as pd
+from Model.BancoDeDados.banco import Banco
+
 
 class Model:
     def __init__(self, controller ,parent):
@@ -28,6 +25,10 @@ class Model:
         self.solucaoIngenua = {}
         self.otimizacao = {}
         self.tabelaResultado = []
+        self.taxaQuali = 0
+        self.taxaAcess = 0
+        self.taxaOcup = 0
+        self.banco = Banco(self)
 
 
     def setup(self):
@@ -119,7 +120,7 @@ class Model:
     def getHorarioTurma(self, id_turma):
         id_turma = int(id_turma)
         return self.turmas[id_turma]['horario']
-        
+
     def listaSalasPossiveis(self, id_turma):
         id_turma = int(id_turma)
         salasPossiveis = self.achaSalasPossiveis(self.turmas[id_turma], self.sorted_salas)
@@ -225,21 +226,22 @@ class Model:
 
         for erro in erros:
             sumOcup += Decimal(erro['ocup'])
-            sumAcess += erro['acess']
+            sumAcess += Decimal(erro['acess'])
             sumQuali += Decimal(erro['quali'])
-            
+        
+        self.taxaQuali = Decimal(sumQuali/len(erros))
+        self.taxaAcess = Decimal(sumAcess/len(erros))
+        self.taxaOcup = Decimal(sumOcup/len(erros))
+
         sumQuali = Decimal(sumQuali/len(erros))*self.pesoQuali 
         sumAcess = Decimal(sumAcess/len(erros))*self.pesoAcess  
         sumOcup  = Decimal(sumOcup/len(erros))*self.pesoOcup
-        qualidadeFinal = Decimal(sumQuali + sumOcup +sumAcess)/3
+        qualidadeFinal = Decimal(sumQuali + sumOcup +sumAcess)/3#soma das taxas dividido pelo peso
+
         return(qualidadeFinal)
 
-    def trocarTurma(self, horarios, salas, dias, turma):
-        #original = avaliaTurmas(horarios, salas, dias, turmas);
-        horarios[salas[0]][dias[0]][turma], horarios[salas[1]][dias[1]][turma] = horarios[salas[1]][dias[1]][turma], horarios[salas[0]][dias[0]][turma]
-        #novo = avaliaTurmas(horarios, salas, dias, turmas)
-        #melhor = avaliaTroca(original, novo)
-        return horarios
+    def trocarTurma(self, salas, dia, horario):
+        self.otimizacao[salas[0]][dia][horario], self.otimizacao[salas[1]][dia][horario] = self.otimizacao[salas[1]][dia][horario], self.otimizacao[salas[0]][dia][horario]
 
     def trocaTurmas(self, a, numeroDeTrocas):
         temp = a.copy()
@@ -318,3 +320,7 @@ class Model:
                         self.tabelaResultado.append(lista)
 
         return self.tabelaResultado
+    def salvarSolucao(self):
+        df = self.banco.solucaoToDF(self.otimizacao)
+        self.banco.alimentarBanco(df,"solucao", False)
+

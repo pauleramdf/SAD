@@ -16,13 +16,15 @@ class TopMenu(Frame):
 
         self.controller = controller
         self.parent = parent
-        self.frm = Frame(parent, bg = "black",relief=RIDGE)
+        self.frm = Frame(parent, bg = "grey",relief=RIDGE)
         self.frm.pack(side=TOP)
 
-        self.texto1 = ""
-        self.texto2 = ""
-        self.texto3 = ""
-        self.texto4 = ""
+        self.texto1 = StringVar()
+        self.texto2 = StringVar()
+        self.texto3 = StringVar()
+        self.texto4 = StringVar()
+        self.texto5 = StringVar()
+        self.texto6 = StringVar()
         self.makewidgets()
         
 
@@ -32,21 +34,26 @@ class TopMenu(Frame):
         self.setup_layout()
 
     def create_widgets(self):
-        self.label = Label(self.frm, text="Insira os parametros para alocação", bg="black", fg="white" , relief=RIDGE)
-        self.label1 = Label(self.frm, text="Pesos", bg="black", fg="white")
-        self.label2 = Label(self.frm, text="Temperatura", bg="black", fg="white")
-        self.label3 = Label(self.frm, text="Fator de resfriamento", bg="black", fg="white")
-        self.label4 = Label(self.frm, text="Max Iterações", bg="black", fg="white")
-        self.label5 = Label(self.frm, text="Caminho Turmas", bg="black", fg="white")
-        self.label6 = Label(self.frm, text="Caminho Salas", bg="black", fg="white")
+        self.label = Label(self.frm, text="Insira os parametros\npara começar a\notimização da alocação", bg = "grey", anchor=CENTER, fg="black", width = 20)
+        self.label1 = Label(self.frm, text="Pesos", bg = "grey", fg="black")
+        self.label2 = Label(self.frm, text="Temperatura", bg = "grey", fg="black")
+        self.label3 = Label(self.frm, text="Fator de resfriamento", bg = "grey", fg="black")
+        self.label4 = Label(self.frm, text="Max Iterações", bg = "grey", fg="black")
+        self.label5 = Label(self.frm, text="Caminho Turmas", bg = "grey", fg="black")
+        self.label6 = Label(self.frm, text="Caminho Salas", bg = "grey",  fg="black")
 
-
-        self.entrada1 = Entry(self.frm, width = 25)
-        self.entrada2 = Entry(self.frm, width = 25)
-        self.entrada3 = Entry(self.frm, width = 25)
-        self.entrada4 = Entry(self.frm, width = 25)
-        self.entrada5 = Entry(self.frm, width = 25)
-        self.entrada6 = Entry(self.frm, width = 25)
+        self.texto1.set("1 1 1")
+        self.texto2.set("1000")
+        self.texto3.set("0.90")
+        self.texto4.set("10")
+        self.texto5.set("C:/Users/Paulo/Desktop/TrabalhoSAD/cenario1-turmas.csv")
+        self.texto6.set("C:/Users/Paulo/Desktop/TrabalhoSAD/cenario1-salas.csv")
+        self.entrada1 = Entry(self.frm, textvariable=self.texto1, width = 25)
+        self.entrada2 = Entry(self.frm, textvariable=self.texto2, width = 25)
+        self.entrada3 = Entry(self.frm, textvariable=self.texto3, width = 25)
+        self.entrada4 = Entry(self.frm, textvariable=self.texto4, width = 25)
+        self.entrada5 = Entry(self.frm, textvariable=self.texto5, width = 25)
+        self.entrada6 = Entry(self.frm, textvariable=self.texto6, width = 25)
 
         self.button = Button(self.frm, text="Começar otimização",command=self.initSimulacao)
 
