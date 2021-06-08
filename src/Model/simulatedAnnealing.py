@@ -11,7 +11,6 @@ import copy
 class Model:
     def __init__(self, controller, parent):
         self.controller = controller
-        #self,pesoOcup,pesoAcess,pesoQuali,temp,fator
         self.turmas = {}
         self.salas = {}
         self.horarios = {}
@@ -23,14 +22,16 @@ class Model:
         self.sorted_salas = []
         self.sorted_turmas = []
         self.solucaoIngenua = {}
+        self.reverterSolucao = {}
         self.otimizacao = {}
         self.tabelaResultado = []
+        self.qInicial = 0
         self.qAfter = 0
         self.qBefore = 0 
         self.taxaQuali = 0
         self.taxaAcess = 0
         self.taxaOcup = 0
-        #self.banco = Banco(self)
+        self.banco = Banco(self)
 
 
     def setup(self):
@@ -88,6 +89,10 @@ class Model:
         qAfter = self.qualidadeDaSolucao(self.otimizacao)
         #print("a qualidade da slução otimizada é ",qualidade)
         #exibeSolucao(list(x.items()), turmas, salas)
+
+        self.reverterSolucao = copy.deepcopy(self.otimizacao)
+        self.qInicial = qAfter
+
         return (qBefore,qAfter)
 
     #transforma o horario para um formato mais amigavel
@@ -205,7 +210,7 @@ class Model:
             return 1
         return 0
 
-        #analisa qualidade da solução atual
+    #analisa qualidade da solução atual
     def analisaQualidade(self, a, turmas, salas):
         somatorio = []
         for sala in salas:
@@ -220,6 +225,7 @@ class Model:
                         obj = {"ocup": ocup,"acess": acess ,"quali": quali}
                         somatorio.append(obj)
         return somatorio        
+
     def updateQualidade(self):
         self.qBefore = self.qualidadeDaSolucao(self.solucaoIngenua)
         self.qAfter = self.qualidadeDaSolucao(self.otimizacao)
@@ -324,8 +330,28 @@ class Model:
 
         return self.tabelaResultado
 
-'''        
+    def reverterAlteracoes(self):
+        self.solucaoIngenua = self.otimizacao
+        self.otimizacao = self.reverterSolucao
+        self.qAfter = self.qInicial
+        self.updateQualidade()
+
+       
     def salvarSolucao(self):
         df = self.banco.solucaoToDF(self.otimizacao)
+        turmas = self.banco.turmasDictToDF(self.turmas)
+        salas = self.banco.salasDictToDF(self.salas)
+        self.banco.alimentarBanco(turmas, 'turmas', False)
+        self.banco.alimentarBanco(salas, 'salas', False)
         self.banco.alimentarBanco(df,"solucao", False)
-''' 
+
+    def carregarSolucao(self):
+            turmas = self.banco.lerTabela('turmas')
+            salas = self.banco.lerTabela('salas')
+            self.turmas = self.banco.turmasDF_toDict(turmas)
+            self.salas = self.banco.salasDF_toDict(salas)
+            df = self.banco.lerTabela('solucao')
+            self.otimizacao = self.banco.solucaoToDict(df)
+            df = self.banco.solucaoToList(df)
+            return df
+

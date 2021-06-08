@@ -28,26 +28,27 @@ class SideMenu(Frame):
         self.setup_layout()
 
     def create_widgets(self):
-        self.turmas = Button(self.container, text="Buscar turmas",command=self.buscarTurmas, width=18)
-        self.salas = Button(self.container, text="Buscar salas",command=self.buscarSalas, width=18)
+        self.turmas = Button(self.container, text="Buscar turmas", command=self.buscarTurmas, width=18)
+        self.salas = Button(self.container, text="Buscar salas", command=self.buscarSalas, width=18)
 
         self.qualidadeBefore.set("Qualidade Inicial = 0")
         self.qualidadeAfter.set("Qualidade Otimizada = 0")
         self.diferenca.set("Melhora obtida = 0")
         self.taxaOcup.set("Taxa de ocupação total = 0")
 
-        self.labelqBefore = tk.Label(self.container,textvariable = self.qualidadeBefore)
+        self.labelqBefore = tk.Label(self.container, textvariable = self.qualidadeBefore)
         self.labelqAfter = tk.Label(self.container, textvariable = self.qualidadeAfter)
         self.labelDiferenca = tk.Label(self.container, textvariable = self.diferenca)
         self.labelTaxaOcup = tk.Label(self.container, textvariable = self.taxaOcup)
 
-        self.labelH = tk.Label(self.container,text= "Lista de horarios")
-        self.labelT = tk.Label(self.container,text= "Lista de turmas")
+        self.labelH = tk.Label(self.container, text= "Lista de horarios")
+        self.labelT = tk.Label(self.container, text= "Lista de turmas")
         self.listaTurmas  = ttk.Combobox(self.container, justify=CENTER, values = ["Horarios da turma"])
         self.listaTurmas2  = ttk.Combobox(self.container,justify=CENTER, values=["Salas Disponiveis"])
-        self.trocar = Button(self.container, text="Trocar",command=self.trocarTurmas, width=18)
-        self.reverter = Button(self.container, text="Reverter alteração",command=self.reverterAlteracao, width=18)
-        self.salvar = Button(self.container, text="Salvar Solucao",command=self.salvarSolucao, width=18)
+        self.trocar = Button(self.container, text="Trocar", command=self.trocarTurmas, width=18)
+        self.reverter = Button(self.container, text="Reverter alterações", command=self.reverterAlteracoes, width=18)
+        self.carregar = Button(self.container, text="Carregar solução", command=self.carregarSolucao, width=18)
+        self.salvar = Button(self.container, text="Salvar Solucao", command=self.salvarSolucao, width=18)
 
     def setup_layout(self):
         self.listaTurmas.current(0)
@@ -64,6 +65,7 @@ class SideMenu(Frame):
         self.listaTurmas2.pack()
         self.trocar.pack(pady = (5,5))
         self.reverter.pack(pady = (5,5))
+        self.carregar.pack(pady = (5,5))
         self.salvar.pack(anchor=S, pady = (5,5))
 
     def trocarTurmas(self):
@@ -85,8 +87,18 @@ class SideMenu(Frame):
         self.qualidadeAfter.set("Qualidade Otimizada = {q: .5f}".format(q = qualidade))
 
     def setDiferenca(self, a, b):
-        self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = (b - a)/b *100))
-    
+        diferenca = (b - a)/b *100
+        if diferenca > 0:
+            self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = diferenca))
+            self.labelDiferenca['bg'] = "green"
+        elif diferenca < 0: 
+            self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = diferenca))
+            self.labelDiferenca['bg'] ="red"
+
+        else:
+            self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = diferenca))
+            self.labelDiferenca['bg'] ="grey"
+
     def setTaxaOCup(self, taxa):
         self.taxaOcup.set("Taxa de ocupação total = {q: .3f}".format(q = taxa))
     
@@ -119,5 +131,8 @@ class SideMenu(Frame):
     def buscarSalas(self):
         self.controller.buscarSalas()        
 
-    def reverterAlteracao(self):
-        self.controller.reverterAlteracao()        
+    def carregarSolucao(self):
+        self.controller.carregarSolucao()        
+    
+    def reverterAlteracoes(self):
+        self.controller.reverterAlteracoes()        

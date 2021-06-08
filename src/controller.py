@@ -34,7 +34,6 @@ class Controller:
            messagebox.showinfo(title="ERRO", message="Sala ou Horario invalido")
         
 
-
     def otimizacao_btn_pressed( self, pesos, temp, fator, maxIterations, pathTurmas, pathSalas):
         try:
             (qBefore, qAfter) = self.model.solucao(pesos, temp, fator, maxIterations, pathTurmas, pathSalas)
@@ -44,7 +43,7 @@ class Controller:
             self.sideMenu.setTaxaOCup(self.model.taxaOcup)
             self.tabela.setTabela(self.model.exibeSolucao(self.model.otimizacao))
         except:
-           messagebox.showinfo(title="ERRO", message="Parametros invalidos")
+            messagebox.showinfo(title="ERRO", message="Parametros invalidos")
     
     def setListaTurmas(self, valores):
         self.sideMenu.setListaTurmas(valores)
@@ -59,6 +58,14 @@ class Controller:
     def getHorarioTurma(self, id_turma):
         horariosPossiveis = self.model.getHorarioTurma(id_turma)
         return horariosPossiveis
+
+    def buscarTurmas(self):
+        busca = Busca(self, self.model.turmas, self.model.salas, 1)
+        busca.inicia()
+
+    def buscarSalas(self):
+        busca = Busca(self, self.model.turmas, self.model.salas, 0)
+        busca.inicia()
     
     def salvarSolucao(self):
         try:
@@ -67,14 +74,17 @@ class Controller:
         except:
             messagebox.showinfo(title="ERRO", message="Solução não foi salva")
 
-    def buscarTurmas(self):
-        busca = Busca(self, self.model.turmas, self.model.salas, 1)
-        busca.inicia()
+    def carregarSolucao(self):
+        self.tabela.updateTabela(self.model.carregarSolucao())
 
-
-    def buscarSalas(self):
-        busca = Busca(self, self.model.turmas, self.model.salas, 0)
-        busca.inicia()
+    def reverterAlteracoes(self):
+        self.model.reverterAlteracoes()
+        self.tabela.updateTabela(self.model.exibeSolucao(self.model.otimizacao))
+        self.model.updateQualidade()
+        self.sideMenu.setQualidadeBefore(self.model.qBefore)
+        self.sideMenu.setQualidadeAfter(self.model.qAfter)
+        self.sideMenu.setDiferenca(self.model.qBefore, self.model.qAfter)
+        self.sideMenu.setTaxaOCup(self.model.taxaOcup)
 
         
 if __name__ == "__main__":
