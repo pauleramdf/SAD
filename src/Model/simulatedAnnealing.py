@@ -30,7 +30,7 @@ class Model:
         self.taxaQuali = 0
         self.taxaAcess = 0
         self.taxaOcup = 0
-        #self.banco = Banco(self)
+        self.banco = Banco(self)
 
     def setup(self):
         df = csv.DictReader(open(r"{path}".format(path = self.pathSalas),encoding='utf-8'))
@@ -385,7 +385,7 @@ class Model:
         self.otimizacao = self.reverterSolucao
         self.qAfter = self.qInicial
         self.updateQualidade()
-  
+
     #Salva a solução otimizada no banco de dados 
     def salvarSolucao(self):
         df = self.banco.solucaoToDF(self.otimizacao)
