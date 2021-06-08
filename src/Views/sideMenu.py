@@ -28,12 +28,15 @@ class SideMenu(Frame):
         self.setup_layout()
 
     def create_widgets(self):
+        self.turmas = Button(self.container, text="Buscar turmas",command=self.buscarTurmas, width=18)
+        self.salas = Button(self.container, text="Buscar salas",command=self.buscarSalas, width=18)
+
         self.qualidadeBefore.set("Qualidade Inicial = 0")
         self.qualidadeAfter.set("Qualidade Otimizada = 0")
         self.diferenca.set("Melhora obtida foi de = 0")
         self.taxaOcup.set("A taxa de ocupação foi = 0")
 
-        self.labelqBefore = tk.Label(self.container, text= "teste",textvariable = self.qualidadeBefore)
+        self.labelqBefore = tk.Label(self.container,textvariable = self.qualidadeBefore)
         self.labelqAfter = tk.Label(self.container, textvariable = self.qualidadeAfter)
         self.labelDiferenca = tk.Label(self.container, textvariable = self.diferenca)
         self.labelTaxaOcup = tk.Label(self.container, textvariable = self.taxaOcup)
@@ -42,12 +45,15 @@ class SideMenu(Frame):
         self.labelT = tk.Label(self.container,text= "Lista de turmas")
         self.listaTurmas  = ttk.Combobox(self.container, justify=CENTER, values = ["Horarios da turma"])
         self.listaTurmas2  = ttk.Combobox(self.container,justify=CENTER, values=["Salas Disponiveis"])
-        self.trocar = Button(self.container, text="Trocar",command=self.trocarTurmas)
-        self.salvar = Button(self.container, text="Salvar Solucao",command=self.salvarSolucao)
+        self.trocar = Button(self.container, text="Trocar",command=self.trocarTurmas, width=18)
+        self.reverter = Button(self.container, text="Reverter alteração",command=self.reverterAlteracao, width=18)
+        self.salvar = Button(self.container, text="Salvar Solucao",command=self.salvarSolucao, width=18)
 
     def setup_layout(self):
         self.listaTurmas.current(0)
         self.listaTurmas2.current(0)
+        self.turmas.pack(pady = (5,5))
+        self.salas.pack(pady = (5,5))
         self.labelqBefore.pack()
         self.labelqAfter.pack()
         self.labelDiferenca.pack()
@@ -56,8 +62,9 @@ class SideMenu(Frame):
         self.listaTurmas.pack()
         self.labelT.pack()
         self.listaTurmas2.pack()
-        self.trocar.pack()
-        self.salvar.pack()
+        self.trocar.pack(pady = (5,5))
+        self.reverter.pack(pady = (5,5))
+        self.salvar.pack(anchor=S, pady = (5,5))
 
     def trocarTurmas(self):
         horario = self.listaTurmas.get()
@@ -105,4 +112,12 @@ class SideMenu(Frame):
         #[('101', {'cad': 100, 'acess': 1, 'quali': 1}), ('201', {'cad': 100, 'acess': 1, 'quali': 2}), ('301', {'cad': 100, 'acess': 1, 'quali': 2})]
     def salvarSolucao(self):
         self.controller.salvarSolucao()
-        
+    
+    def buscarTurmas(self):
+        self.controller.buscarTurmas()
+
+    def buscarSalas(self):
+        self.controller.buscarSalas()        
+
+    def reverterAlteracao(self):
+        self.controller.reverterAlteracao()        

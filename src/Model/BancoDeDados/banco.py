@@ -6,7 +6,7 @@ class Banco():
     def __init__(self, parent):
         self.parent = parent
         self.engine = sqlalchemy.create_engine( 'mysql+pymysql://root:andre123@localhost:3306/salas')
-        
+
         #Recebe o nome da tabela e
         #Retorna o data frame da tabela do banco.
     def lerTabela(self, tabela):
@@ -79,8 +79,8 @@ class Banco():
                     # Verifica se teve aula no dia.
                     # Caso sim escreve o horario e a turma.
                     if valor > 0:
-                        df.append([solucao[i][0],key,chave,valor])
-        df = pd.DataFrame(df).rename(columns={0:'id_sala', 1:'dia_semana',2:'horario',3:'id_turma'})
+                        df.append([solucao[i][0],key,chave, self.parent.turmas[valor]['disciplina'],valor])
+        df = pd.DataFrame(df).rename(columns={0:'id_sala', 1:'dia_semana',2:'horario',3:'cod_turma',4:'id_turma'})
         return df
     
     def solucaoToList(self,solucao):

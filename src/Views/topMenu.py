@@ -3,13 +3,7 @@ from tkinter import messagebox
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import *
-import csv
-import math
-import random
-#import sqlalchemy
-from decimal import Decimal
-import copy
-#import pandas as pd
+
 
 class TopMenu(Frame):
     def __init__(self, controller, parent):
@@ -42,7 +36,7 @@ class TopMenu(Frame):
         self.label5 = Label(self.frm, text="Caminho Turmas", bg = "grey", fg="black")
         self.label6 = Label(self.frm, text="Caminho Salas", bg = "grey",  fg="black")
 
-        self.texto1.set("1 1 1")
+        self.texto1.set("1,1,1")
         self.texto2.set("1000")
         self.texto3.set("0.90")
         self.texto4.set("10")
