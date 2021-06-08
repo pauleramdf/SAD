@@ -14,7 +14,7 @@ class Tabela(Frame):
         self.makewidgets()
 
 
-
+    #Cria e configura o layout dos componentes que vão ser exibidos nesse frame, que são a tabela e o Scrol
     def makewidgets(self):
         self.sbar = Scrollbar(self.frm)
         self.tabela = ttk.Treeview(self.frm, columns=('id sala','dia','horario','cod turma','id turma'), show='headings')
@@ -49,19 +49,21 @@ class Tabela(Frame):
         style.map('Treeview', 
             background=[('selected', 'blue')])
         
-
+    #Atualiza os valores exibidos na tabela
     def updateTabela(self, texto):
         for record in self.tabela.get_children():
             self.tabela.delete(record)
         for (s,d,h,t,i) in texto:
             self.tabela.insert("","end",values=(s,d,h,t,i))
         
+    #Insere os valores a serem exibidos na tabela
     def setTabela(self, texto):
         #self.text.delete('1.0', END) 
         #self.text.insert('1.0', texto) 
         for (s,d,h,t,i) in texto:
             self.tabela.insert("","end",values=(s,d,h,t,i))
 
+    #Repassa os valores da linha selecionada
     def getLinha(self):
         try:
             linhaSelecionada = self.tabela.selection()[0]
@@ -69,7 +71,8 @@ class Tabela(Frame):
             return valores
         except:
             messagebox.showinfo(title="ERRO", message="Selecione uma linha valida")
-    
+
+    #Identifica o click em uma linha da tabela e capta os valores dessa linha 
     def onDoubleClick(self, event):
             linhaSelecionada = self.tabela.selection()[0]
             valores = self.tabela.item(linhaSelecionada, "values")

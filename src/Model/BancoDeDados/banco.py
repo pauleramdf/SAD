@@ -31,6 +31,8 @@ class Banco():
 
         #Transforma o dicionario das turmas em um Data Frame.
     def turmasDictToDF(self, turmas):
+        for x in turmas:
+            turmas[x]['horario'] = self.reverteHorario(turmas[x]['horario'])
         df = pd.DataFrame.from_dict(turmas, orient='index').reset_index().rename(columns={'index': 'id_turma', 'prof': 'professor', 'horario':'dias_horario','alunos' :'numero_alunos', "acess":'acessibilidade', 'quali':'qualidade' })
         return df
 
@@ -48,12 +50,12 @@ class Banco():
     
         #Transforma o Data Frame das turmas em um dicionario.
     def turmasDF_toDict(self,df):
-        turmasDf = list(df.drop('index',axis='columns').to_dict().items())
+        turmasDf = list(df.to_dict().items())
         turmas = {}
         for i in range (len(turmasDf[0][1])):
-            turmas[i] = {"disciplina": turmasDf[0][1][i],"prof": turmasDf[1][1][i], "horario": self.transformaHorario(turmasDf[2][1][i]),
-                 "alunos": int(turmasDf[3][1][i]), "curso": turmasDf[4][1][i], 
-                 "periodo": int(turmasDf[5][1][i]), "acess": int(turmasDf[6][1][i]), "quali": int(turmasDf[7][1][i])}
+            turmas[i+1] = {"disciplina": turmasDf[1][1][i],"prof": turmasDf[2][1][i], "horario": self.transformaHorario(turmasDf[3][1][i]),
+                 "alunos": int(turmasDf[4][1][i]), "curso": turmasDf[5][1][i], 
+                 "periodo": int(turmasDf[6][1][i]), "acess": int(turmasDf[7][1][i]), "quali": int(turmasDf[8][1][i])}
         return turmas
     
         #Transforma o Data Frame das salas em um dicionario.
@@ -145,3 +147,29 @@ class Banco():
                 dia = 'sab'
             list.append((dia,int(horarioIni)))
         return list
+
+    def reverteHorario(self, horario):
+        lista = []
+        for (dia,horario) in horario:
+            if(horario <= 3):
+                turno = "M" + str(horario*2 -1) + str(horario*2) 
+            elif(horario <= 6):
+                turno = 'T' + str(((horario-4) *2) + 1) + str(((horario-4) *2) + 2)
+            else:
+                turno = 'N' + str(((horario-7) *2) + 1) + str(((horario-7) *2) + 2)
+
+            if(dia == 'seg'):
+                dia = '2' 
+            elif(dia == 'ter'):
+                dia = '3'
+            elif(dia == 'qua'):
+                dia = '4'
+            elif(dia == 'qui'):
+                dia = '5'
+            elif(dia == 'sex'):
+                dia = '6'
+            else:
+                dia = '7'
+            lista.append(dia + turno)
+        return ('-'.join(lista))
+
