@@ -4,7 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import *
 
-
+#classe que cria o frame superior da tela, por onde os parametros são inseridos
 class TopMenu(Frame):
     def __init__(self, controller, parent):
 
@@ -21,27 +21,30 @@ class TopMenu(Frame):
         self.texto6 = StringVar()
         self.makewidgets()
         
-
     def makewidgets(self): 
 
         self.create_widgets()
         self.setup_layout()
 
     def create_widgets(self):
+        #inicializa os labels do frame
         self.label = Label(self.frm, text="Insira os parametros\npara começar a\notimização da alocação", bg = "grey", anchor=CENTER, fg="black", width = 20)
-        self.label1 = Label(self.frm, text="Pesos", bg = "grey", fg="black")
+        self.label1 = Label(self.frm, text="Pesos(Ocupação, Acessibilidade, qualidade)", bg = "grey", fg="black")
         self.label2 = Label(self.frm, text="Temperatura", bg = "grey", fg="black")
         self.label3 = Label(self.frm, text="Fator de resfriamento", bg = "grey", fg="black")
         self.label4 = Label(self.frm, text="Max Iterações", bg = "grey", fg="black")
         self.label5 = Label(self.frm, text="Caminho Turmas", bg = "grey", fg="black")
         self.label6 = Label(self.frm, text="Caminho Salas", bg = "grey",  fg="black")
 
+        #inicializa os valores padrões para inicializar a simulação 
         self.texto1.set("1,1,1")
         self.texto2.set("1000")
         self.texto3.set("0.90")
         self.texto4.set("10")
         self.texto5.set("C:/Users/Paulo/Desktop/TrabalhoSAD/cenario1-turmas.csv")
         self.texto6.set("C:/Users/Paulo/Desktop/TrabalhoSAD/cenario1-salas.csv")
+
+        #Cria os campos para entrada de dados
         self.entrada1 = Entry(self.frm, textvariable=self.texto1, width = 25)
         self.entrada2 = Entry(self.frm, textvariable=self.texto2, width = 25)
         self.entrada3 = Entry(self.frm, textvariable=self.texto3, width = 25)
@@ -49,8 +52,8 @@ class TopMenu(Frame):
         self.entrada5 = Entry(self.frm, textvariable=self.texto5, width = 25)
         self.entrada6 = Entry(self.frm, textvariable=self.texto6, width = 25)
 
+        #Cria os botões do frame
         self.button = Button(self.frm, text="Começar otimização",command=self.initSimulacao)
-
         self.button_turma = Button(self.frm,
                         text = "Browse Files",
                         command = lambda: self.browseFiles(True))
@@ -61,6 +64,7 @@ class TopMenu(Frame):
 
 
     def setup_layout(self):
+        #configura o layout do frame, especificando onde cada elemento deve ficar na tela
         self.label.grid(row = 0, padx = (5,5),pady = (5,5))
         self.label1.grid(row = 1, column=0, padx = (5,5),pady = (5,5))
         self.label2.grid(row = 1, column=1, padx = (5,5),pady = (5,5))
@@ -80,6 +84,8 @@ class TopMenu(Frame):
         self.button_turma.grid(row = 3, column = 4, padx = (5,5),pady = (5,5))
         self.button_sala.grid(row = 3, column = 5, padx = (5,5),pady = (5,5))
       
+    #Essa função é acionada quando o usuario aperta o botão "Começar otimização".
+    #Os valores dos campos de entrada são lidos e passados para o controller
     def initSimulacao(self):
         self.texto1 = self.entrada1.get()
         self.texto2 = self.entrada2.get()
@@ -95,6 +101,7 @@ class TopMenu(Frame):
             self.texto5,
             self.texto6)
 
+    #função que busca os arquivos csv na maquina do usuario
     def browseFiles(self, turma):
 
             filename = filedialog.askopenfilename(initialdir = "/",

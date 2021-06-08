@@ -6,7 +6,8 @@ class Banco():
     def __init__(self, parent):
         self.parent = parent
         self.engine = sqlalchemy.create_engine( 'mysql+pymysql://root:andre123@localhost:3306/salas')
-
+        self.id_sala = self.get_idSalas()
+        
         #Recebe o nome da tabela e
         #Retorna o data frame da tabela do banco.
     def lerTabela(self, tabela):
@@ -30,6 +31,8 @@ class Banco():
 
         #Transforma o dicionario das turmas em um Data Frame.
     def turmasDictToDF(self, turmas):
+        for x in turmas:
+            turmas[x]['horario'] = self.reverteHorario(turmas[x]['horario'])
         df = pd.DataFrame.from_dict(turmas, orient='index').reset_index().rename(columns={'index': 'id_turma', 'prof': 'professor', 'horario':'dias_horario','alunos' :'numero_alunos', "acess":'acessibilidade', 'quali':'qualidade' })
         return df
 
@@ -47,22 +50,22 @@ class Banco():
     
         #Transforma o Data Frame das turmas em um dicionario.
     def turmasDF_toDict(self,df):
-        turmasDf = list(df.drop('index',axis='columns').to_dict().items())
+        turmasDf = list(df.to_dict().items())
         turmas = {}
         for i in range (len(turmasDf[0][1])):
-            turmas[i] = {"disciplina": turmasDf[0][1][i],"prof": turmasDf[1][1][i], "horario": transformaHorario(turmasDf[2][1][i]),
-                 "alunos": int(turmasDf[3][1][i]), "curso": turmasDf[4][1][i], 
-                 "periodo": int(turmasDf[5][1][i]), "acess": int(turmasDf[6][1][i]), "quali": int(turmasDf[7][1][i])}
+            turmas[i+1] = {"disciplina": turmasDf[1][1][i],"prof": turmasDf[2][1][i], "horario": self.transformaHorario(turmasDf[3][1][i]),
+                 "alunos": int(turmasDf[4][1][i]), "curso": turmasDf[5][1][i], 
+                 "periodo": int(turmasDf[6][1][i]), "acess": int(turmasDf[7][1][i]), "quali": int(turmasDf[8][1][i])}
         return turmas
     
         #Transforma o Data Frame das salas em um dicionario.
     def salasDF_toDict(self,df):
         salasDf = list(df.to_dict().items())
         salas = {}
-        id_Salas = []
+        self.id_salas = []
         for i in range (len(salasDf[0][1])):
             salas[salasDf[0][1][i]] = {"cad": int(salasDf[1][1][i]), "acess": int(salasDf[2][1][i]), "quali": int(salasDf[3][1][i])}
-            id_Salas.append(salasDf[0][1][i])
+            self.id_sala.append(salasDf[0][1][i])
         return salas
     
         #Transforma o dicionario da solucao em um Data Frame.
@@ -82,10 +85,33 @@ class Banco():
                         df.append([solucao[i][0],key,chave, self.parent.turmas[valor]['disciplina'],valor])
         df = pd.DataFrame(df).rename(columns={0:'id_sala', 1:'dia_semana',2:'horario',3:'cod_turma',4:'id_turma'})
         return df
+
+    def solucaoToDict(self,solucao):
+        horarios = {}
+        for sala in self.id_sala:
+            horarios[sala] =  { "seg":{1: 0, 2: 0, 3: 0, 4: 0, 5: 0 , 6: 0 , 7: 0 , 8: 0 },
+                                "ter":{1: 0, 2: 0, 3: 0, 4: 0, 5: 0 , 6: 0 , 7: 0 , 8: 0 },
+                                "qua":{1: 0, 2: 0, 3: 0, 4: 0, 5: 0 , 6: 0 , 7: 0 , 8: 0 },
+                                "qui":{1: 0, 2: 0, 3: 0, 4: 0, 5: 0 , 6: 0 , 7: 0 , 8: 0 },
+                                "sex":{1: 0, 2: 0, 3: 0, 4: 0, 5: 0 , 6: 0 , 7: 0 , 8: 0 },
+                                "sab":{1: 0, 2: 0, 3: 0, 4: 0, 5: 0 , 6: 0 , 7: 0 , 8: 0 }}
+        solucaoDf = list(solucao.drop('cod_turma',axis='columns').to_dict().items())
+        for i in range(len(solucaoDf[0][1])):
+            horarios[solucaoDf[0][1][i]][solucaoDf[1][1][i]][solucaoDf[2][1][i]] = solucaoDf[3][1][i]
+            
+        return horarios
     
     def solucaoToList(self,solucao):
         df = solucao.values.tolist()
         return df
+
+    def get_idSalas(self):
+        df = self.lerTabela('sala')
+        ids = []
+        salasDf = list(df.to_dict().items())
+        for i in range (len(salasDf[0][1])):
+            ids.append(salasDf[0][1][i])
+        return ids
     
     def filtro(self,data,filtrado,filtro):
         df = data[data[filtrado] == filtro]
@@ -121,3 +147,29 @@ class Banco():
                 dia = 'sab'
             list.append((dia,int(horarioIni)))
         return list
+
+    def reverteHorario(self, horario):
+        lista = []
+        for (dia,horario) in horario:
+            if(horario <= 3):
+                turno = "M" + str(horario*2 -1) + str(horario*2) 
+            elif(horario <= 6):
+                turno = 'T' + str(((horario-4) *2) + 1) + str(((horario-4) *2) + 2)
+            else:
+                turno = 'N' + str(((horario-7) *2) + 1) + str(((horario-7) *2) + 2)
+
+            if(dia == 'seg'):
+                dia = '2' 
+            elif(dia == 'ter'):
+                dia = '3'
+            elif(dia == 'qua'):
+                dia = '4'
+            elif(dia == 'qui'):
+                dia = '5'
+            elif(dia == 'sex'):
+                dia = '6'
+            else:
+                dia = '7'
+            lista.append(dia + turno)
+        return ('-'.join(lista))
+

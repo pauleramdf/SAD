@@ -12,6 +12,7 @@ import copy
 #import pandas as pd
 
 class SideMenu(Frame):
+    #Cria o frame responsavel pelo menu lateral
     def __init__(self, controller, parent):
         self.parent = parent
         self.controller = controller
@@ -27,28 +28,31 @@ class SideMenu(Frame):
         self.create_widgets()
         self.setup_layout()
 
+    #Cria os componentes que pertencem a este frame
     def create_widgets(self):
-        self.turmas = Button(self.container, text="Buscar turmas",command=self.buscarTurmas, width=18)
-        self.salas = Button(self.container, text="Buscar salas",command=self.buscarSalas, width=18)
+        self.turmas = Button(self.container, text="Buscar turmas", command=self.buscarTurmas, width=18)
+        self.salas = Button(self.container, text="Buscar salas", command=self.buscarSalas, width=18)
 
         self.qualidadeBefore.set("Qualidade Inicial = 0")
         self.qualidadeAfter.set("Qualidade Otimizada = 0")
         self.diferenca.set("Melhora obtida = 0")
         self.taxaOcup.set("Taxa de ocupação total = 0")
 
-        self.labelqBefore = tk.Label(self.container,textvariable = self.qualidadeBefore)
+        self.labelqBefore = tk.Label(self.container, textvariable = self.qualidadeBefore)
         self.labelqAfter = tk.Label(self.container, textvariable = self.qualidadeAfter)
         self.labelDiferenca = tk.Label(self.container, textvariable = self.diferenca)
         self.labelTaxaOcup = tk.Label(self.container, textvariable = self.taxaOcup)
 
-        self.labelH = tk.Label(self.container,text= "Lista de horarios")
-        self.labelT = tk.Label(self.container,text= "Lista de turmas")
+        self.labelH = tk.Label(self.container, text= "Lista de horarios")
+        self.labelT = tk.Label(self.container, text= "Lista de turmas")
         self.listaTurmas  = ttk.Combobox(self.container, justify=CENTER, values = ["Horarios da turma"])
         self.listaTurmas2  = ttk.Combobox(self.container,justify=CENTER, values=["Salas Disponiveis"])
-        self.trocar = Button(self.container, text="Trocar",command=self.trocarTurmas, width=18)
-        self.reverter = Button(self.container, text="Reverter alteração",command=self.reverterAlteracao, width=18)
-        self.salvar = Button(self.container, text="Salvar Solucao",command=self.salvarSolucao, width=18)
+        self.trocar = Button(self.container, text="Trocar", command=self.trocarTurmas, width=18)
+        self.reverter = Button(self.container, text="Reverter alterações", command=self.reverterAlteracoes, width=18)
+        self.carregar = Button(self.container, text="Carregar solução", command=self.carregarSolucao, width=18)
+        self.salvar = Button(self.container, text="Salvar Solucao", command=self.salvarSolucao, width=18)
 
+    #Configura o layout dos componentes
     def setup_layout(self):
         self.listaTurmas.current(0)
         self.listaTurmas2.current(0)
@@ -64,8 +68,10 @@ class SideMenu(Frame):
         self.listaTurmas2.pack()
         self.trocar.pack(pady = (5,5))
         self.reverter.pack(pady = (5,5))
+        self.carregar.pack(pady = (5,5))
         self.salvar.pack(anchor=S, pady = (5,5))
 
+    #Pega as informações selecionadas para realizar a troca de turmas
     def trocarTurmas(self):
         horario = self.listaTurmas.get()
         sala_futura = self.listaTurmas2.get()
@@ -78,18 +84,33 @@ class SideMenu(Frame):
         #print("trocar a turma",linha[4] ,"no horario", self.listaTurmas.get(),"com", self.listaTurmas2.get())
         self.controller.trocaTurmas((sala_atual, sala_futura), dia, hora)
 
+    #atualiza o valor da qualidade da solução exibido no menu lateral
     def setQualidadeBefore(self, qualidade):
         self.qualidadeBefore.set("Qualidade Inicial = {q: .5f}".format(q = qualidade))
 
+    #atualiza o valor da qualidade da solução exibido no menu lateral
     def setQualidadeAfter(self, qualidade):
         self.qualidadeAfter.set("Qualidade Otimizada = {q: .5f}".format(q = qualidade))
 
+    #atualiza o valor da melhora obtida entre as soluções exibido no menu lateral
     def setDiferenca(self, a, b):
-        self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = (b - a)/b *100))
-    
+        diferenca = (b - a)/b *100
+        if diferenca > 0:
+            self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = diferenca))
+            self.labelDiferenca['bg'] = "green"
+        elif diferenca < 0: 
+            self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = diferenca))
+            self.labelDiferenca['bg'] ="red"
+
+        else:
+            self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = diferenca))
+            self.labelDiferenca['bg'] ="grey"
+
+    #atualiza o valor da taxa de ocupação exibido no menu lateral
     def setTaxaOCup(self, taxa):
         self.taxaOcup.set("Taxa de ocupação total = {q: .3f}".format(q = taxa))
     
+    #atualiza o horario da turma selecionada na tabela
     def setHorarioTurma(self, valores):
         id_turma = valores[4]
         lista = []
@@ -100,6 +121,7 @@ class SideMenu(Frame):
 
         self.listaTurmas['values'] = lista
 
+    #atualiza a lista de salas disponiveis para troca para a turma selecionada na tabela
     def setListaTurmas(self, valores):
         id_turma = valores[4]
         lista = []
@@ -112,12 +134,16 @@ class SideMenu(Frame):
         #[('101', {'cad': 100, 'acess': 1, 'quali': 1}), ('201', {'cad': 100, 'acess': 1, 'quali': 2}), ('301', {'cad': 100, 'acess': 1, 'quali': 2})]
     def salvarSolucao(self):
         self.controller.salvarSolucao()
-    
+    #Chama a função que cria a janela de buscas de turmas
     def buscarTurmas(self):
         self.controller.buscarTurmas()
-
+    #Chama a função que cria a janela de buscas de Salas
     def buscarSalas(self):
         self.controller.buscarSalas()        
 
-    def reverterAlteracao(self):
-        self.controller.reverterAlteracao()        
+    #chama a função que carrega a solução
+    def carregarSolucao(self):
+        self.controller.carregarSolucao()        
+    #chama a função que reverte as alterações feitas 
+    def reverterAlteracoes(self):
+        self.controller.reverterAlteracoes()        

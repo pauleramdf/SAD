@@ -5,6 +5,7 @@ from tkinter import filedialog
 from tkinter import *
 
 class Filtros(Frame):
+    #inicializa o frame onde os dados dos filtros são lidos
     def __init__(self, container, parent, flag):
         self.container = container
         self.parent = parent
@@ -15,11 +16,12 @@ class Filtros(Frame):
         self.texto1 = StringVar()
         self.makewidgets()
         
-
+    #Chama a função que cria os componentes do frame e outra que configura os componentes
     def makewidgets(self): 
         self.create_widgets() 
         self.setup_layout()
 
+    #Cria os componentes do Frame
     def create_widgets(self):
         self.label = Label(self.frm, text="Escolha a caracteristica que deseja filtrar", bg = "grey", anchor=CENTER, fg="black")
         self.label1 = Label(self.frm, text="Item", bg = "grey", anchor=CENTER, fg="black")
@@ -29,6 +31,8 @@ class Filtros(Frame):
         self.entrada = Entry(self.frm, textvariable=self.texto1, width = 25)
         self.button = Button(self.frm, text="Buscar",command=self.buscar)
 
+    #Configura o layout de acordo com o atributo Flag, que determina quais filtros devem ser exibidos.
+    #Caso flag seja 1, os filtros de Turma são exibidos, caso contrario os filtros de salas que são exibidos.
     def setup_layout(self):
         lista = []
         self.listaFiltros.current(0)
@@ -47,6 +51,7 @@ class Filtros(Frame):
             lista.append(filtro)
             self.listaFiltros['values'] = lista
 
+    #Busca os items que correspondem ao filtro selecionado
     def buscar(self):
         entrada = self.entrada.get()
         filtro = self.listaFiltros.get()
@@ -54,6 +59,7 @@ class Filtros(Frame):
 
 
 class Items(Frame):
+    #inicializa a tabela onde os items buscados são apresentados
     def __init__(self, container, parent, flag):
         self.container = container
         self.parent = parent
@@ -75,10 +81,14 @@ class Items(Frame):
         style.map('Treeview', 
             background=[('selected', 'blue')])
 
+    #Chama a função que cria os componentes do frame e outra que configura os componentes    
     def makewidgets(self):
         self.create_widgets()
         self.setup_layout()
+    
 
+    #Cria os componentes do tabela de acordo com o atributo Flag, que determina quais colunas devem ser exibidas.
+    #Caso flag seja 1, as colunas de Turma são exibidas, caso contrario os colunas de salas que são exibidas.
     def create_widgets(self):
         if(self.flag == 1):
             self.tabela = ttk.Treeview(self.frm, columns=('id', 'disciplina', 'professor', 'horario', 'alunos', 'curso',
@@ -120,10 +130,13 @@ class Items(Frame):
         self.sbar.config(command= self.tabela.yview) 
         self.tabela.config(yscrollcommand=self.sbar.set)
     
+    #Configura o layout da tabela
     def setup_layout(self):
         self.sbar.pack(side=RIGHT, fill=Y) 
         self.tabela.pack(side=LEFT, expand=YES, fill=BOTH)
     
+    #Atualiza as linhas da tabela de acordo com o atributo Flag, que determina quais items devem ser exibidos.
+    #Caso flag seja 1, as Turma são exibidas, caso contrario as salas que são exibidas. 
     def updateTabela(self, texto):
         if(self.flag == 1):
             for record in self.tabela.get_children():
@@ -136,7 +149,7 @@ class Items(Frame):
             for (x1,x2,x3,x4) in texto:
                 self.tabela.insert("","end",values=(x1,x2,x3,x4))
 
-
+    #Cria a tabela inicial com todos elementos elementos das salas ou das turmas.
     def setTabela(self, texto): 
         if(self.flag == 1):
             for (x1,x2,x3,x4,x5,x6,x7,x8,x9) in texto:
@@ -154,6 +167,7 @@ class Busca:
         self.filtros = None
         self.items = None
 
+    #Transforma o dicionario onde estão as salas e turmas em uma lista que pode ser adicionada na tabela.
     def iniciaTabela(self):
         resultado = []
         if(self.flag == 1):
@@ -180,6 +194,7 @@ class Busca:
         self.iniciaTabela()
         root.mainloop()
 
+    #faz a filtragem da lista de turmas ou salas, de acordo com o filtro selecionado pelo usuario
     def buscar(self, entrada, filtro):
         try:
             resultado = []

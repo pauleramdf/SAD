@@ -1,17 +1,15 @@
 import csv
 import math
 import random
-#import sqlalchemy
+import sqlalchemy
 from decimal import Decimal
 import copy 
-#import pandas as pd
-#from Model.BancoDeDados.banco import Banco
+from Model.BancoDeDados.banco import Banco
 
 
 class Model:
     def __init__(self, controller, parent):
         self.controller = controller
-        #self,pesoOcup,pesoAcess,pesoQuali,temp,fator
         self.turmas = {}
         self.salas = {}
         self.horarios = {}
@@ -23,15 +21,16 @@ class Model:
         self.sorted_salas = []
         self.sorted_turmas = []
         self.solucaoIngenua = {}
+        self.reverterSolucao = {}
         self.otimizacao = {}
         self.tabelaResultado = []
+        self.qInicial = 0
         self.qAfter = 0
         self.qBefore = 0 
         self.taxaQuali = 0
         self.taxaAcess = 0
         self.taxaOcup = 0
         #self.banco = Banco(self)
-
 
     def setup(self):
         df = csv.DictReader(open(r"{path}".format(path = self.pathSalas),encoding='utf-8'))
@@ -61,6 +60,7 @@ class Model:
 
 
     def solucao(self, pesos, temp, fator, maxIterations, pathTurmas, pathSalas):
+        #configura os parametros para começar a otimização
         pesos = pesos.split(",")
         self.pesoOcup = Decimal(pesos[0])
         self.pesoAcess = Decimal(pesos[1])     
@@ -88,9 +88,14 @@ class Model:
         qAfter = self.qualidadeDaSolucao(self.otimizacao)
         #print("a qualidade da slução otimizada é ",qualidade)
         #exibeSolucao(list(x.items()), turmas, salas)
+
+        self.reverterSolucao = copy.deepcopy(self.otimizacao)
+        self.qInicial = qAfter
+
         return (qBefore,qAfter)
 
-    #transforma o horario para um formato mais amigavel
+    #Recebe uma String que representa o horario da turma e transforma esse 
+    # horario em um formato mais amigavel. 
     def transformaHorario(self, horario):
         list = []
         turmaTemp = horario.split("-")
@@ -119,10 +124,12 @@ class Model:
             list.append((dia,int(horarioIni)))
         return list
 
+    #Busca o horario de uma turma com base em seu id
     def getHorarioTurma(self, id_turma):
         id_turma = int(id_turma)
         return self.turmas[id_turma]['horario']
 
+    #Busca as salas possiveis para um dado id de turma
     def listaSalasPossiveis(self, id_turma):
         id_turma = int(id_turma)
         salasPossiveis = self.achaSalasPossiveis(self.turmas[id_turma], self.sorted_salas)
@@ -166,7 +173,7 @@ class Model:
                 salasDisponiveis.append(sala) #adiciona a sala avaliada na lista resultado
         return salasDisponiveis
 
-
+    #Faz uma alocação "burra", escolhendo sempre a primeira sala entre as salas dispoveis para a turma
     def alocaTurmasIngenua(self, horarios, turmas, salas):
         salasDisponiveis = []
         for turma in turmas:
@@ -187,7 +194,7 @@ class Model:
                     
         return horarios
 
-        #calcula a taxa de ocupação de uma sala em relação a uma turma
+    #calcula a taxa de ocupação de uma sala em relação a uma turma
     def taxaOcupacao(self,turma, sala):
         return Decimal(turma['alunos']) /sala['cad']
 
@@ -205,7 +212,9 @@ class Model:
             return 1
         return 0
 
-        #analisa qualidade da solução atual
+    # Essa função percorre todas as salas e, caso alocadas para uma turma, calcula 
+    # as respectivas taxas de qualidade para essa turma dentro dessa sala.
+    # essa função retorna as taxas de cada uma das salas alocadas.
     def analisaQualidade(self, a, turmas, salas):
         somatorio = []
         for sala in salas:
@@ -220,10 +229,14 @@ class Model:
                         obj = {"ocup": ocup,"acess": acess ,"quali": quali}
                         somatorio.append(obj)
         return somatorio        
+
+    #atualiza a qualidade das soluções armazenadas
     def updateQualidade(self):
         self.qBefore = self.qualidadeDaSolucao(self.solucaoIngenua)
         self.qAfter = self.qualidadeDaSolucao(self.otimizacao)
-        
+
+    # Calcula a qualidade geral da solução com base em 3 taxas e seus respecitvos pesos.
+    # Taxa de Ocupação das salas, Taxa de Qualidade das salas, e Taxa de acessibilidade. 
     def qualidadeDaSolucao(self, solucao):
         erros = self.analisaQualidade(solucao, self.turmas, self.salas)
         sumOcup, sumQuali, sumAcess = (0,0,0)
@@ -241,25 +254,49 @@ class Model:
         sumAcess = Decimal(sumAcess/len(erros))*self.pesoAcess  
         sumOcup  = Decimal(sumOcup/len(erros))*self.pesoOcup
         return Decimal(sumQuali + sumOcup +sumAcess)/(self.pesoAcess + self.pesoOcup + self.pesoQuali)
-
+    
+    #Recebe duas salas e uma turma. Então troca essa turma de uma sala para a outra.
     def trocarTurma(self, salas, dia, horario):
         self.solucaoIngenua = copy.deepcopy(self.otimizacao)
         self.otimizacao[salas[0]][dia][horario], self.otimizacao[salas[1]][dia][horario] = self.otimizacao[salas[1]][dia][horario], self.otimizacao[salas[0]][dia][horario]
 
+    #Procura entre as salas disponiveis para uma determinada turma, qual delas tem a melhor taxa qualidade.
+    #Retorna a sala que tem maior qualidade, ou seja, a sala que melhor se adequa a turma. 
+    def achaMelhorSala(self, turma, salas):
+        somatorio = []
+        for (id_sala,value) in salas:
+            # loop que passa pelas salas
+            ocup = self.taxaOcupacao(turma, value)
+            quali = self.taxaQualidade(turma, value)
+            acess = self.taxaAcessibilidade(turma, value) 
+            soma = (ocup*self.pesoOcup + acess*self.pesoAcess + quali*self.pesoQuali)/(self.pesoOcup + self.pesoAcess + self.pesoQuali)
+            somatorio.append((id_sala,soma))
+
+        melhor = sorted(somatorio, key = lambda sala: sala[1],reverse=True)     
+        return melhor[0][0]
+    
+    #recebe uma solução e realiza uma certa quantidade de trocas de turmas de salas
     def trocaTurmas(self, a, numeroDeTrocas):
         temp = a.copy()
         achou = False
         for i in range(numeroDeTrocas+1):
+            #A cada iteração uma nova turma é sorteada para a troca
             turma = random.choice(self.sorted_turmas)
             id_turma = turma[0]
             horarioTurma = turma[1]['horario']
+            #são buscadas salas vazias que correspondem as restrições hard dessa turma sorteada
             salasDisponiveis = self.achaSalasDisponiveis(temp, turma[1], self.sorted_salas)
             salasPossiveis = self.achaSalasPossiveis(turma[1], self.sorted_salas)
 
+            #caso não exista sala vazia para essa turma nesse respectivo horario, não é feita nenhuma troca.
             if(len(salasDisponiveis) == 0):
-                print("não ha salas disponiveis para troca")
+                #print("não ha salas disponiveis para troca")
                 continue
-            randomSala = random.choice(salasDisponiveis)
+            
+            #é sorteada uma sala dentre as salas vazias. Então essa turma troca sua atual sala por essa sala vazia.
+            #randomSala = random.choice(salasPossiveis)
+            melhorSala = self.achaMelhorSala(turma[1], salasDisponiveis)
+            
             for sala in salasPossiveis:
                 for h in horarioTurma:
                     achou = True 
@@ -267,12 +304,25 @@ class Model:
                     hora = h[1]
                     if(temp[sala[0]][dia][hora] == id_turma):
                         temp[sala[0]][dia][hora]  = 0
-                        temp[randomSala[0]][dia][hora] = id_turma
+                        temp[melhorSala][dia][hora] = id_turma
                 if(achou):
                     achou = False
                     break
         return temp  
 
+    #Recebe uma solução inicial, o dicionario de turmas e salas, a temperatura inicial,
+    #a quantidade maxima de iterações por temperatura, e o fator de resfriamento.
+    #São feitas diversas modições na solução inicial enquanto a temperatura esfria.
+    #A cada iteração são feitas n trocas na solução inicial, sendo n = log2(temperatura).
+    #As trocas são feitas de forma aleatoria entre as salas que respeitam as condições "hard" 
+    #da respectiva turma.
+    #Caso a qualidade da solução modificada seja melhor que a solução inicial, nos trocamos
+    #de solução. Caso contrario é calculado uma probabilidade de realizar a troca entre as turmas.
+    #Quanto maior a diferença de qualidade entre as turmas, maior é chance de realizar essa troca
+    # mesmo que a qualidade seja inferior.
+    #A otimização termina quando a temperatura for igual ou inferior a 2.
+    #Então a qualidade da solução obtida atraves da otimização é comparada com a solução incial.
+    #É retornada a solução que obteve maior qualidade.
     def simulatedAnnealing (self, solucao, turmas, salas, temp, maxIterations, alfa):
         inicial = copy.deepcopy(solucao)
         probabilidade = 0
@@ -286,11 +336,12 @@ class Model:
                 qualidadeInicial = self.qualidadeDaSolucao(inicial)
                 sucessor = self.trocaTurmas(copy.deepcopy(inicial), numeroDeTrocas)
                 qualidadeSucessor = self.qualidadeDaSolucao(sucessor)
-                #print("temperatura",temp,"qualidade da solucao", qualidadeInicial, qualidadeSucessor, "probabilidade", probabilidade, "erro:",  qualidadeInicial - qualidadeSucessor)
+                #Confere se a qualidade da solução melhorou apos a troca ou não.
+                #Caso seja maior, então essa nova solução é assumida.
                 if(qualidadeSucessor > qualidadeInicial):
-                    #print("trocou aqui")
                     inicial = copy.deepcopy(sucessor)
                 else:
+                    #calcula a probabilidade de realizar a troca mesmo que a qualidade seja inferior
                     erro = abs(Decimal(qualidadeInicial) - Decimal(qualidadeSucessor))
                     probabilidade = math.exp(Decimal(-erro/temp))
                     n = random.random()
@@ -299,12 +350,15 @@ class Model:
                         qualidadeInicial = qualidadeSucessor
 
             i = 0 
+            #atualização da temperatura baseada no fator de resfriamento
             temp = temp * alfa 
+        #compara a qualidade inicial com a qualidade da otimização
         if(qualidadeInicial > qSolucao ):
             return inicial                     
         else: 
             return solucao
 
+    #Transforma o dicionario onde a solução está armazenada em uma lista para ser exibida na tabela
     def exibeSolucao(self, solucao):
         temp = list(solucao.items())
         self.tabelaResultado = []
@@ -324,8 +378,34 @@ class Model:
 
         return self.tabelaResultado
 
-'''        
+    #Descarta todas as alterações feitas até então carregando a solução salva no banco de dados 
+    #ou obtida atraves do simulatedAnnealing
+    def reverterAlteracoes(self):
+        self.solucaoIngenua = self.otimizacao
+        self.otimizacao = self.reverterSolucao
+        self.qAfter = self.qInicial
+        self.updateQualidade()
+  
+    #Salva a solução otimizada no banco de dados 
     def salvarSolucao(self):
         df = self.banco.solucaoToDF(self.otimizacao)
+        turmas = self.banco.turmasDictToDF(self.turmas)
+        salas = self.banco.salasDictToDF(self.salas)
+        self.banco.alimentarBanco(turmas, 'turmas', False)
+        self.banco.alimentarBanco(salas, 'salas', False)
         self.banco.alimentarBanco(df,"solucao", False)
-''' 
+
+    #Carrega uma solução salva no banco de dados, assim como os dicionarios de turmas e salas dessa solução
+    def carregarSolucao(self):
+        turmas = self.banco.lerTabela('turmas')
+        salas = self.banco.lerTabela('salas')
+        self.turmas = self.banco.turmasDF_toDict(turmas)
+        self.salas = self.banco.salasDF_toDict(salas)
+        df = self.banco.lerTabela('solucao')
+        self.otimizacao = self.banco.solucaoToDict(df)
+        df = self.banco.solucaoToList(df)
+        self.sorted_salas = sorted(self.salas.items(), key=lambda sala: (sala[1]['acess'],sala[1]['cad']), reverse=True)
+        self.sorted_turmas = sorted(self.turmas.items(), key=lambda turma: (turma[1]['acess'], turma[1]['alunos']), reverse=True) 
+        self.solucaoIngenua = self.otimizacao
+        self.reverterSolucao = copy.deepcopy(self.otimizacao)
+        return df
