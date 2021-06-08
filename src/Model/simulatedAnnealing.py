@@ -1,18 +1,15 @@
-import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
-from tkinter import filedialog
-from tkinter import *
 import csv
 import math
 import random
 #import sqlalchemy
 from decimal import Decimal
-import copy
+import copy 
 #import pandas as pd
+#from Model.BancoDeDados.banco import Banco
+
 
 class Model:
-    def __init__(self, controller ,parent):
+    def __init__(self, controller, parent):
         self.controller = controller
         #self,pesoOcup,pesoAcess,pesoQuali,temp,fator
         self.turmas = {}
@@ -28,6 +25,12 @@ class Model:
         self.solucaoIngenua = {}
         self.otimizacao = {}
         self.tabelaResultado = []
+        self.qAfter = 0
+        self.qBefore = 0 
+        self.taxaQuali = 0
+        self.taxaAcess = 0
+        self.taxaOcup = 0
+        #self.banco = Banco(self)
 
 
     def setup(self):
@@ -57,7 +60,11 @@ class Model:
         self.sorted_turmas = sorted(self.turmas.items(), key=lambda turma: (turma[1]['acess'], turma[1]['alunos']), reverse=True) 
 
 
-    def solucao(self, peso, temp, fator, maxIterations, pathTurmas, pathSalas):
+    def solucao(self, pesos, temp, fator, maxIterations, pathTurmas, pathSalas):
+        pesos = pesos.split(",")
+        self.pesoOcup = Decimal(pesos[0])
+        self.pesoAcess = Decimal(pesos[1])     
+        self.pesoQuali = Decimal(pesos[2])
         self.pathTurmas = pathTurmas
         self.pathSalas = pathSalas
         self.temp = Decimal(temp)
@@ -65,9 +72,8 @@ class Model:
         self.maxIterations = int(maxIterations)
 
         self.setup()
-        self.solucaoIngenua = (self.alocaTurmasIngenua(self.horarios, self.sorted_turmas, self.sorted_salas))
-        qBefore = self.qualidadeDaSolucao(self.solucaoIngenua, self.turmas, self.salas)
-
+        self.solucaoIngenua = self.alocaTurmasIngenua(self.horarios, self.sorted_turmas, self.sorted_salas)
+        qBefore = self.qualidadeDaSolucao(self.solucaoIngenua)
 
         #otimiza a solução inicial utilizando a solução inicial e passando os parametros:
         #solInicial, turmas, salas, temperatura, n de iterações, 
@@ -79,7 +85,7 @@ class Model:
                                                     self.maxIterations, 
                                                     Decimal(self.fator))
 
-        qAfter = self.qualidadeDaSolucao(self.otimizacao, self.turmas, self.salas)
+        qAfter = self.qualidadeDaSolucao(self.otimizacao)
         #print("a qualidade da slução otimizada é ",qualidade)
         #exibeSolucao(list(x.items()), turmas, salas)
         return (qBefore,qAfter)
@@ -92,15 +98,12 @@ class Model:
             dia = int(turmaTemp[i][0])
             turno = turmaTemp[i][1]
             horarioIni = int(turmaTemp[i][2])
-
             if(turno == 'M'):
                 horarioIni = 1 + horarioIni/2 
             if(turno == 'T'):
                 horarioIni = 4 + horarioIni/2 
-
             elif(turno == 'N'):
                 horarioIni = 7 + horarioIni/2
-            
             if(int(turmaTemp[i][0]) == 2):
                 dia = 'seg' 
             elif(int(turmaTemp[i][0]) == 3):
@@ -119,7 +122,7 @@ class Model:
     def getHorarioTurma(self, id_turma):
         id_turma = int(id_turma)
         return self.turmas[id_turma]['horario']
-        
+
     def listaSalasPossiveis(self, id_turma):
         id_turma = int(id_turma)
         salasPossiveis = self.achaSalasPossiveis(self.turmas[id_turma], self.sorted_salas)
@@ -217,29 +220,31 @@ class Model:
                         obj = {"ocup": ocup,"acess": acess ,"quali": quali}
                         somatorio.append(obj)
         return somatorio        
-
-    def qualidadeDaSolucao(self, solucao, turmas, salas):
-        erros = self.analisaQualidade(solucao, turmas, salas)
+    def updateQualidade(self):
+        self.qBefore = self.qualidadeDaSolucao(self.solucaoIngenua)
+        self.qAfter = self.qualidadeDaSolucao(self.otimizacao)
+        
+    def qualidadeDaSolucao(self, solucao):
+        erros = self.analisaQualidade(solucao, self.turmas, self.salas)
         sumOcup, sumQuali, sumAcess = (0,0,0)
-        qualidadeFinal = 0 
 
         for erro in erros:
             sumOcup += Decimal(erro['ocup'])
-            sumAcess += erro['acess']
+            sumAcess += Decimal(erro['acess'])
             sumQuali += Decimal(erro['quali'])
-            
+        
+        self.taxaQuali = Decimal(sumQuali/len(erros))
+        self.taxaAcess = Decimal(sumAcess/len(erros))
+        self.taxaOcup = Decimal(sumOcup/len(erros))
+
         sumQuali = Decimal(sumQuali/len(erros))*self.pesoQuali 
         sumAcess = Decimal(sumAcess/len(erros))*self.pesoAcess  
         sumOcup  = Decimal(sumOcup/len(erros))*self.pesoOcup
-        qualidadeFinal = Decimal(sumQuali + sumOcup +sumAcess)/3
-        return(qualidadeFinal)
+        return Decimal(sumQuali + sumOcup +sumAcess)/(self.pesoAcess + self.pesoOcup + self.pesoQuali)
 
-    def trocarTurma(self, horarios, salas, dias, turma):
-        #original = avaliaTurmas(horarios, salas, dias, turmas);
-        horarios[salas[0]][dias[0]][turma], horarios[salas[1]][dias[1]][turma] = horarios[salas[1]][dias[1]][turma], horarios[salas[0]][dias[0]][turma]
-        #novo = avaliaTurmas(horarios, salas, dias, turmas)
-        #melhor = avaliaTroca(original, novo)
-        return horarios
+    def trocarTurma(self, salas, dia, horario):
+        self.solucaoIngenua = copy.deepcopy(self.otimizacao)
+        self.otimizacao[salas[0]][dia][horario], self.otimizacao[salas[1]][dia][horario] = self.otimizacao[salas[1]][dia][horario], self.otimizacao[salas[0]][dia][horario]
 
     def trocaTurmas(self, a, numeroDeTrocas):
         temp = a.copy()
@@ -272,15 +277,15 @@ class Model:
         inicial = copy.deepcopy(solucao)
         probabilidade = 0
         erro = 0
-        qualiSolucao = self.qualidadeDaSolucao(inicial, turmas, salas)
-        qSolucao = self.qualidadeDaSolucao(solucao, turmas, salas)
+        qualiSolucao = self.qualidadeDaSolucao(inicial)
+        qSolucao = self.qualidadeDaSolucao(solucao)
         
         while (temp >= 2):
             numeroDeTrocas = int(math.log2(temp))
             for i in range(maxIterations):       
-                qualidadeInicial = self.qualidadeDaSolucao(inicial, turmas, salas)
+                qualidadeInicial = self.qualidadeDaSolucao(inicial)
                 sucessor = self.trocaTurmas(copy.deepcopy(inicial), numeroDeTrocas)
-                qualidadeSucessor = self.qualidadeDaSolucao(sucessor, turmas, salas)
+                qualidadeSucessor = self.qualidadeDaSolucao(sucessor)
                 #print("temperatura",temp,"qualidade da solucao", qualidadeInicial, qualidadeSucessor, "probabilidade", probabilidade, "erro:",  qualidadeInicial - qualidadeSucessor)
                 if(qualidadeSucessor > qualidadeInicial):
                     #print("trocou aqui")
@@ -318,3 +323,9 @@ class Model:
                         self.tabelaResultado.append(lista)
 
         return self.tabelaResultado
+
+'''        
+    def salvarSolucao(self):
+        df = self.banco.solucaoToDF(self.otimizacao)
+        self.banco.alimentarBanco(df,"solucao", False)
+''' 
