@@ -33,8 +33,8 @@ class SideMenu(Frame):
 
         self.qualidadeBefore.set("Qualidade Inicial = 0")
         self.qualidadeAfter.set("Qualidade Otimizada = 0")
-        self.diferenca.set("Melhora obtida foi de = 0")
-        self.taxaOcup.set("A taxa de ocupação foi = 0")
+        self.diferenca.set("Melhora obtida = 0")
+        self.taxaOcup.set("Taxa de ocupação total = 0")
 
         self.labelqBefore = tk.Label(self.container,textvariable = self.qualidadeBefore)
         self.labelqAfter = tk.Label(self.container, textvariable = self.qualidadeAfter)
@@ -85,10 +85,10 @@ class SideMenu(Frame):
         self.qualidadeAfter.set("Qualidade Otimizada = {q: .5f}".format(q = qualidade))
 
     def setDiferenca(self, a, b):
-        self.diferenca.set("Melhora obtida foi de = {q: .3f}%".format(q = (b - a)/b *100))
+        self.diferenca.set("Melhora obtida = {q: .3f}%".format(q = (b - a)/b *100))
     
     def setTaxaOCup(self, taxa):
-        self.taxaOcup.set("A taxa de ocupação foi de = {q: .3f}".format(q = taxa))
+        self.taxaOcup.set("Taxa de ocupação total = {q: .3f}".format(q = taxa))
     
     def setHorarioTurma(self, valores):
         id_turma = valores[4]

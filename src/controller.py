@@ -22,25 +22,29 @@ class Controller:
         return info
 
     def trocaTurmas(self, salas, dia, horario):
-        self.model.trocarTurma(salas, dia, horario)
-        self.tabela.updateTabela(self.model.exibeSolucao((self.model.otimizacao)))
-        self.model.updateQualidade()
-        self.sideMenu.setQualidadeBefore(self.model.qBefore)
-        self.sideMenu.setQualidadeAfter(self.model.qAfter)
-        self.sideMenu.setDiferenca(self.model.qBefore, self.model.qAfter)
+        try:
+            self.model.trocarTurma(salas, dia, horario)
+            self.tabela.updateTabela(self.model.exibeSolucao((self.model.otimizacao)))
+            self.model.updateQualidade()
+            self.sideMenu.setQualidadeBefore(self.model.qBefore)
+            self.sideMenu.setQualidadeAfter(self.model.qAfter)
+            self.sideMenu.setDiferenca(self.model.qBefore, self.model.qAfter)
+            self.sideMenu.setTaxaOCup(self.model.taxaOcup)
+        except:
+           messagebox.showinfo(title="ERRO", message="Sala ou Horario invalido")
         
 
 
     def otimizacao_btn_pressed( self, pesos, temp, fator, maxIterations, pathTurmas, pathSalas):
-        #try:
-        (qBefore, qAfter) = self.model.solucao(pesos, temp, fator, maxIterations, pathTurmas, pathSalas)
-        self.sideMenu.setQualidadeBefore(qBefore)
-        self.sideMenu.setQualidadeAfter(qAfter)
-        self.sideMenu.setDiferenca(qBefore, qAfter)
-        self.sideMenu.setTaxaOCup(self.model.taxaOcup)
-        self.tabela.setTabela(self.model.exibeSolucao(self.model.otimizacao))
-        #except:
-        #   messagebox.showinfo(title="ERRO", message="Parametros invalidos")
+        try:
+            (qBefore, qAfter) = self.model.solucao(pesos, temp, fator, maxIterations, pathTurmas, pathSalas)
+            self.sideMenu.setQualidadeBefore(qBefore)
+            self.sideMenu.setQualidadeAfter(qAfter)
+            self.sideMenu.setDiferenca(qBefore, qAfter)
+            self.sideMenu.setTaxaOCup(self.model.taxaOcup)
+            self.tabela.setTabela(self.model.exibeSolucao(self.model.otimizacao))
+        except:
+           messagebox.showinfo(title="ERRO", message="Parametros invalidos")
     
     def setListaTurmas(self, valores):
         self.sideMenu.setListaTurmas(valores)
@@ -57,11 +61,16 @@ class Controller:
         return horariosPossiveis
     
     def salvarSolucao(self):
-        self.model.salvarSolucao()
+        try:
+            self.model.salvarSolucao()
+            messagebox.showinfo(title="SUCESSO", message="Solução foi salva com sucesso")
+        except:
+            messagebox.showinfo(title="ERRO", message="Solução não foi salva")
 
     def buscarTurmas(self):
         busca = Busca(self, self.model.turmas, self.model.salas, 1)
         busca.inicia()
+
 
     def buscarSalas(self):
         busca = Busca(self, self.model.turmas, self.model.salas, 0)

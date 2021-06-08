@@ -13,17 +13,7 @@ class Tabela(Frame):
         self.frm.pack(side=LEFT,expand=YES, fill=BOTH)
         self.makewidgets()
 
-        style = ttk.Style()
-        style.theme_use("default")
-        style.configure("Treeview", 
-            background="#D3D3D3",
-            foreground="black",
-            rowheight=25,
-            fieldbackground="#D3D3D3"
-            )
 
-        style.map('Treeview', 
-            background=[('selected', 'blue')])
 
     def makewidgets(self):
         self.sbar = Scrollbar(self.frm)
@@ -46,6 +36,19 @@ class Tabela(Frame):
         self.sbar.pack(side=RIGHT, fill=Y) 
         self.tabela.pack(side=LEFT, expand=YES, fill=BOTH)
         self.tabela.bind("<Double-1>", self.onDoubleClick)
+
+        style = ttk.Style()
+        style.theme_use("default")
+        style.configure("Treeview", 
+            background="#D3D3D3",
+            foreground="black",
+            rowheight=25,
+            fieldbackground="#D3D3D3"
+            )
+
+        style.map('Treeview', 
+            background=[('selected', 'blue')])
+        
 
     def updateTabela(self, texto):
         for record in self.tabela.get_children():

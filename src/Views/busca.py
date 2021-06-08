@@ -52,7 +52,6 @@ class Filtros(Frame):
         filtro = self.listaFiltros.get()
         self.parent.buscar(entrada, filtro)
 
-      
 
 class Items(Frame):
     def __init__(self, container, parent, flag):
@@ -126,7 +125,6 @@ class Items(Frame):
         self.tabela.pack(side=LEFT, expand=YES, fill=BOTH)
     
     def updateTabela(self, texto):
-        print("probelma no update")
         if(self.flag == 1):
             for record in self.tabela.get_children():
                 self.tabela.delete(record)
@@ -140,7 +138,6 @@ class Items(Frame):
 
 
     def setTabela(self, texto): 
-        print("probelma no set")
         if(self.flag == 1):
             for (x1,x2,x3,x4,x5,x6,x7,x8,x9) in texto:
                 self.tabela.insert("","end",values=(x1,x2,x3,x4,x5,x6,x7,x8,x9))
@@ -175,7 +172,7 @@ class Busca:
         root = Tk()
         WIDTH = 700
         HEIGHT = 400
-        root.title("Buscador")
+        root.title("Busca")
         root.geometry("%sx%s" % (WIDTH, HEIGHT))
 
         self.filtros = Filtros(root, self, self.flag)
@@ -184,87 +181,89 @@ class Busca:
         root.mainloop()
 
     def buscar(self, entrada, filtro):
-        resultado = []
-        if(self.flag == 1): 
-            aux = list(self.turmas.items())
-            if(filtro == "ID"):
-                for key, value in aux:
-                    if(key == int(entrada)):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
-            elif(filtro == "disciplina"):
-                for key, value in aux:
-                    if(value['disciplina'] == entrada):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+        try:
+            resultado = []
+            if(self.flag == 1): 
+                aux = list(self.turmas.items())
+                if(filtro == "ID"):
+                    for key, value in aux:
+                        if(key == int(entrada)):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+                elif(filtro == "disciplina"):
+                    for key, value in aux:
+                        if(value['disciplina'] == entrada):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
 
-            elif(filtro == "professor"):
-                for key, value in aux:
-                    if(value['prof'] == entrada):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+                elif(filtro == "professor"):
+                    for key, value in aux:
+                        if(value['prof'] == entrada):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
 
-            elif(filtro == "horario"):
-                for key, value in aux:
-                    if(value['horario'] == entrada):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+                elif(filtro == "horario"):
+                    for key, value in aux:
+                        if(value['horario'] == entrada):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
 
-            elif(filtro == "alunos"):
-                for key, value in aux:
-                    if(value['alunos'] == int(entrada)):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+                elif(filtro == "alunos"):
+                    for key, value in aux:
+                        if(value['alunos'] == int(entrada)):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
 
-            elif(filtro == "curso"):
-                for key, value in aux:
-                    if(value['curso'] == entrada):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+                elif(filtro == "curso"):
+                    for key, value in aux:
+                        if(value['curso'] == entrada):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
 
-            elif(filtro == "periodo"):
-                for key, value in aux:
-                    if(value['periodo'] == int(entrada)):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
-            
-            elif(filtro == "acessibilidade"):
-                for key, value in aux:
-                    if(value['acess'] == int(entrada)):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
-            
-            elif(filtro == "qualidade"):
-                for key, value in aux:
-                    if(value['quali'] == int(entrada)):
-                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+                elif(filtro == "periodo"):
+                    for key, value in aux:
+                        if(value['periodo'] == int(entrada)):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+                
+                elif(filtro == "acessibilidade"):
+                    for key, value in aux:
+                        if(value['acess'] == int(entrada)):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
+                
+                elif(filtro == "qualidade"):
+                    for key, value in aux:
+                        if(value['quali'] == int(entrada)):
+                            resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
 
+                else:
+                    for key, value in aux:
+                        resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
+                            value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
             else:
-                for key, value in aux:
-                    resultado.append([key, value['disciplina'], value['prof'], value['horario'], 
-                        value['alunos'], value['curso'], value['periodo'], value['acess'], value['quali']])
-        else:
-            aux = list(self.salas.items())
-            print(entrada)
-            if(filtro == "ID"):
-                for key, value in aux:
-                    if(key == entrada):
-                        resultado.append([key, value['cad'], value['acess'], value['quali']])
-            if(filtro == "cadeiras"):
-                for key, value in aux:
-                    if(value['cad'] == int(entrada)):
-                        resultado.append([key, value['cad'], value['acess'], value['quali']])
-            if(filtro == "acessibilidade"):
-                for key, value in aux:
-                    if(value['acess'] == int(entrada)):
-                        resultado.append([key, value['cad'], value['acess'], value['quali']])
-            if(filtro == "qualidade"):
-                for key, value in aux:
-                    if(value['quali'] == int(entrada)):
-                        resultado.append([key, value['cad'], value['acess'], value['quali']])
-            
-        self.items.updateTabela(resultado)
-    
+                aux = list(self.salas.items())
+                if(filtro == "ID"):
+                    for key, value in aux:
+                        if(key == entrada):
+                            resultado.append([key, value['cad'], value['acess'], value['quali']])
+                if(filtro == "cadeiras"):
+                    for key, value in aux:
+                        if(value['cad'] == int(entrada)):
+                            resultado.append([key, value['cad'], value['acess'], value['quali']])
+                if(filtro == "acessibilidade"):
+                    for key, value in aux:
+                        if(value['acess'] == int(entrada)):
+                            resultado.append([key, value['cad'], value['acess'], value['quali']])
+                if(filtro == "qualidade"):
+                    for key, value in aux:
+                        if(value['quali'] == int(entrada)):
+                            resultado.append([key, value['cad'], value['acess'], value['quali']])
+                
+            self.items.updateTabela(resultado)
+        except:
+           messagebox.showinfo(title="ERRO", message="Busca Invalida")
+           self.quit()
 
 
