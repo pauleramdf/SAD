@@ -267,7 +267,7 @@ class Model:
     #Caso contrario, a troca é realizada e a solução é atualizada
     def trocarTurma(self, salas, dia, horario):
         achou = False
-        if self.otimizacao[salas[1]][dia][horario] == 0 or (salas[0] in self.listaSalasPossiveis(self.otimizacao[salas[1]][dia][horario])):
+        if self.otimizacao[salas[1]][dia][horario] == 0 or ([sala for sala in self.listaSalasPossiveis(self.otimizacao[salas[1]][dia][horario]) if sala[0] == str(salas[0])]):
             self.solucaoIngenua = copy.deepcopy(self.otimizacao)
             self.otimizacao[salas[0]][dia][horario], self.otimizacao[salas[1]][dia][horario] = self.otimizacao[salas[1]][dia][horario], self.otimizacao[salas[0]][dia][horario]
         else:
