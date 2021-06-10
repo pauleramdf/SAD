@@ -10,23 +10,23 @@ from Views.busca import Busca
 from Model.simulatedAnnealing import Model
 
 class Controller:
+    #inicializa os frames
     def __init__(self, parent):
-        #inicializa os frames
         self.parent = parent
         self.topMenu = TopMenu(self, parent)
         self.tabela = Tabela(self, parent)
         self.sideMenu = SideMenu(self, parent)
         self.model = Model(self, parent)
 
+    #pega a informação da tabela que foi clicada 
     def getLinha(self):
-        #pega a informação da tabela que foi clicada 
         info = self.tabela.getLinha()
         return info
 
+    #recebe do SideBar as salas selecioonadas para troca e os horarios.
+    #Então chama a função trocaTurma no Model que efetivamente faz a troca.
+    #Por fim os valores das qualidades são atualizados na GUI 
     def trocaTurmas(self, salas, dia, horario):
-        #recebe do SideBar as salas selecioonadas para troca e os horarios.
-        #Então chama a função trocaTurma no Model que efetivamente faz a troca.
-        #Por fim os valores das qualidades são atualizados na GUI 
         try:
             self.model.trocarTurma(salas, dia, horario)
             self.tabela.updateTabela(self.model.exibeSolucao((self.model.otimizacao)))
@@ -35,21 +35,22 @@ class Controller:
             self.sideMenu.setQualidadeAfter(self.model.qAfter)
             self.sideMenu.setDiferenca(self.model.qBefore, self.model.qAfter)
             self.sideMenu.setTaxaOCup(self.model.taxaOcup)
+            messagebox.showinfo(title="SUCESSO", message="Troca Realizada com Sucesso")
         except:
            messagebox.showinfo(title="ERRO", message="Sala ou Horario invalido")
         
+    #Essa função recebe os parametros passados pelo usuario para começar o SimulatedAnnealing.
+    #A otimização é realizada no model e então os valores das qualidades são atualizados na GUI
     def otimizacao_btn_pressed( self, pesos, temp, fator, maxIterations, pathTurmas, pathSalas):
-        #Essa função recebe os parametros passados pelo usuario para começar o SimulatedAnnealing.
-        #A otimização é realizada no model e então os valores das qualidades são atualizados na GUI
-        #try:
-        (qBefore, qAfter) = self.model.solucao(pesos, temp, fator, maxIterations, pathTurmas, pathSalas)
-        self.sideMenu.setQualidadeBefore(qBefore)
-        self.sideMenu.setQualidadeAfter(qAfter)
-        self.sideMenu.setDiferenca(qBefore, qAfter)
-        self.sideMenu.setTaxaOCup(self.model.taxaOcup)
-        self.tabela.setTabela(self.model.exibeSolucao(self.model.otimizacao))
-        #except:
-         #   messagebox.showinfo(title="ERRO", message="Parametros invalidos")
+        try:
+            (qBefore, qAfter) = self.model.solucao(pesos, temp, fator, maxIterations, pathTurmas, pathSalas)
+            self.sideMenu.setQualidadeBefore(qBefore)
+            self.sideMenu.setQualidadeAfter(qAfter)
+            self.sideMenu.setDiferenca(qBefore, qAfter)
+            self.sideMenu.setTaxaOCup(self.model.taxaOcup)
+            self.tabela.setTabela(self.model.exibeSolucao(self.model.otimizacao))
+        except:
+            messagebox.showinfo(title="ERRO", message="Parametros invalidos")
     
     #recebe a lista de turmas compativeis com a turma clicada e atualiza a lista no SideMenu
     def setListaTurmas(self, valores):
@@ -97,6 +98,7 @@ class Controller:
             self.sideMenu.setQualidadeAfter(self.model.qAfter)
             self.sideMenu.setDiferenca(self.model.qBefore, self.model.qAfter)
             self.sideMenu.setTaxaOCup(self.model.taxaOcup)
+            messagebox.showinfo(title="SUCESSO", message="Solução carregada com sucesso")
         except:
             messagebox.showinfo(title="ERRO", message="Solução não foi carregada")
 
