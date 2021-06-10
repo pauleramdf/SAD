@@ -58,7 +58,7 @@ class Banco():
                  "periodo": int(turmasDf[6][1][i]), "acess": int(turmasDf[7][1][i]), "quali": int(turmasDf[8][1][i])}
         return turmas
     
-        #Transforma o Data Frame das salas em um dicionario.
+    #Transforma o Data Frame das salas em um dicionario.
     def salasDF_toDict(self,df):
         salasDf = list(df.to_dict().items())
         salas = {}
@@ -68,7 +68,7 @@ class Banco():
             self.id_sala.append(salasDf[0][1][i])
         return salas
     
-        #Transforma o dicionario da solucao em um Data Frame.
+    #Transforma o dicionario da solucao em um Data Frame.
     def solucaoToDF(self,solucao):
         solucao = list(solucao.items())
         df = []
@@ -86,6 +86,7 @@ class Banco():
         df = pd.DataFrame(df).rename(columns={0:'id_sala', 1:'dia_semana',2:'horario',3:'cod_turma',4:'id_turma'})
         return df
 
+    #Converte a solução salva no banco de dados, que é uma lista, em um dicionario.
     def solucaoToDict(self,solucao):
         horarios = {}
         for sala in self.id_sala:
@@ -106,7 +107,7 @@ class Banco():
         return df
 
     def get_idSalas(self):
-        df = self.lerTabela('sala')
+        df = self.lerTabela('salas')
         ids = []
         salasDf = list(df.to_dict().items())
         for i in range (len(salasDf[0][1])):
@@ -116,7 +117,8 @@ class Banco():
     def filtro(self,data,filtrado,filtro):
         df = data[data[filtrado] == filtro]
         return df
-
+    
+    #converte o horario da turma em um formato mais amigavel
     def transformaHorario(self, horario):
         list = []
         turmaTemp = horario.split("-")
@@ -148,6 +150,7 @@ class Banco():
             list.append((dia,int(horarioIni)))
         return list
 
+    #Converte o horario da turma para o formato original 
     def reverteHorario(self, horario):
         lista = []
         for (dia,horario) in horario:

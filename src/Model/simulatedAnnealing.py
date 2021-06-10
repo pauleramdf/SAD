@@ -58,7 +58,7 @@ class Model:
 
         self.sorted_turmas = sorted(self.turmas.items(), key=lambda turma: (turma[1]['acess'], turma[1]['alunos']), reverse=True) 
 
-
+    #Inicia a otimização da solucao
     def solucao(self, pesos, temp, fator, maxIterations, pathTurmas, pathSalas):
         #configura os parametros para começar a otimização
         pesos = pesos.split(",")
@@ -135,6 +135,9 @@ class Model:
         salasPossiveis = self.achaSalasPossiveis(self.turmas[id_turma], self.sorted_salas)
         return salasPossiveis
 
+    #Essa função recebe uma lista de salas e uma turma. 
+    #Ela percorre todas as salas nessa lista e procura as salas que obedecem as 
+    #restrições Hard do problema, e retorna somente estas salas.
     def achaSalasPossiveis(self, turma, salas):
         #busca as salas que ainda estão livr
         salasPossiveis = {}
@@ -149,6 +152,9 @@ class Model:
         # print(salas)
         return salas
 
+    #Essa funçao recebe o solução, uma turma e a lista de salas e retorna uma lista de salas.
+    #Ela percorre o resultado de "salasPossiveis", e checa se essa sala está livre no horario
+    #da Turma passada como parametro. É retornada a lista de salas que estão livres.
     def achaSalasDisponiveis(self, solucao, turma, salas):
         sol = solucao.copy()
         salasPossiveis = self.achaSalasPossiveis(turma, salas)
@@ -173,15 +179,16 @@ class Model:
                 salasDisponiveis.append(sala) #adiciona a sala avaliada na lista resultado
         return salasDisponiveis
 
-    #Faz uma alocação "burra", escolhendo sempre a primeira sala entre as salas dispoveis para a turma
+    #Faz uma alocação "burra", escolhendo sempre a primeira sala entre as salas disponiveis para a turma
     def alocaTurmasIngenua(self, horarios, turmas, salas):
         salasDisponiveis = []
         for turma in turmas:
             h = turma[1]['horario']
             salasDisponiveis = self.achaSalasDisponiveis(horarios, turma[1], salas)
-            #print(salasDisponiveis)
+            #print(salasDisponiveis)        
             if(salasDisponiveis == []):
-                print("deu conflito rs", turma[1]['alunos'])
+                #print("deu conflito", turma[1]['alunos'])
+                continue
             else:
                 for i in range(len(h)):
                     dia = h[i][0] 
@@ -230,7 +237,7 @@ class Model:
                         somatorio.append(obj)
         return somatorio        
 
-    #atualiza a qualidade das soluções armazenadas
+    #atualiza o valor qualidade das soluções armazenadas
     def updateQualidade(self):
         self.qBefore = self.qualidadeDaSolucao(self.solucaoIngenua)
         self.qAfter = self.qualidadeDaSolucao(self.otimizacao)
@@ -256,9 +263,16 @@ class Model:
         return Decimal(sumQuali + sumOcup +sumAcess)/(self.pesoAcess + self.pesoOcup + self.pesoQuali)
     
     #Recebe duas salas e uma turma. Então troca essa turma de uma sala para a outra.
+    #Caso a sala destino quebre alguma restrição hard, um erro é exibido para o usuario.
+    #Caso contrario, a troca é realizada e a solução é atualizada
     def trocarTurma(self, salas, dia, horario):
-        self.solucaoIngenua = copy.deepcopy(self.otimizacao)
-        self.otimizacao[salas[0]][dia][horario], self.otimizacao[salas[1]][dia][horario] = self.otimizacao[salas[1]][dia][horario], self.otimizacao[salas[0]][dia][horario]
+        achou = False
+        if self.otimizacao[salas[1]][dia][horario] == 0 or (salas[0] in self.listaSalasPossiveis(self.otimizacao[salas[1]][dia][horario])):
+            self.solucaoIngenua = copy.deepcopy(self.otimizacao)
+            self.otimizacao[salas[0]][dia][horario], self.otimizacao[salas[1]][dia][horario] = self.otimizacao[salas[1]][dia][horario], self.otimizacao[salas[0]][dia][horario]
+        else:
+            raise Exception("Sala destino não respeita as restrições da turma")
+
 
     #Procura entre as salas disponiveis para uma determinada turma, qual delas tem a melhor taxa qualidade.
     #Retorna a sala que tem maior qualidade, ou seja, a sala que melhor se adequa a turma. 
@@ -275,7 +289,7 @@ class Model:
         melhor = sorted(somatorio, key = lambda sala: sala[1],reverse=True)     
         return melhor[0][0]
     
-    #recebe uma solução e realiza uma certa quantidade de trocas de turmas de salas
+    #recebe uma solução e a quantidade de trocas de turmas de salas que devem ser feitas
     def trocaTurmas(self, a, numeroDeTrocas):
         temp = a.copy()
         achou = False
@@ -296,7 +310,6 @@ class Model:
             #é sorteada uma sala dentre as salas vazias. Então essa turma troca sua atual sala por essa sala vazia.
             #randomSala = random.choice(salasPossiveis)
             melhorSala = self.achaMelhorSala(turma[1], salasDisponiveis)
-            
             for sala in salasPossiveis:
                 for h in horarioTurma:
                     achou = True 
